@@ -3,5 +3,5 @@ dp_params = {
     'port': 5432,
     'user': 'postgres',
     'dbname': 'boardinghouse',
-    'password': '123'
+    'password': '123',
 }

@@ -60,9 +60,21 @@ class DlgListOfVacationers(QDialog):  # класс окна списка про�
         self.btnBack.move(250, 290)
         self.btnBack.clicked.connect(self.evt_btn_back_clicked)
 
+        self.ledText = QLineEdit('Введите id удаляемого отдыхающего', self)
+        self.ledText.move(250, 240)
+
+        self.btnDelete = QPushButton('Удалить отдыхающего', self)
+        self.btnDelete.move(250, 190)
+        self.btnDelete.clicked.connect(self.evt_btn_delete_clicked)
+
     def evt_btn_back_clicked(self):
         dlgDirector.show()
         dlgListOfVacationers.close()
+
+    def evt_btn_delete_clicked(self):
+        conn = psycopg2.connect(dbname=st.dp_params['dbname'], user=st.dp_params['user'],
+                                password=st.dp_params['password'], host=st.dp_params['host'])
+        cursor = conn.cursor()
 
 
 class DlgListOfVacationersN(QDialog):  # класс окна списка проживающих для медсестры
@@ -70,6 +82,8 @@ class DlgListOfVacationersN(QDialog):  # класс окна списка про
         super().__init__()
         self.setWindowTitle('Список проживающих')
         self.resize(600, 600)
+
+        self.ledText = QListWidget()
 
         self.btnBack = QPushButton('Назад', self)
         self.btnBack.move(250, 290)
@@ -227,9 +241,31 @@ class DlgListOfWorkers(QDialog):  # класс окна списка сотру�
 
         self.ledText = QListWidget()
 
+        self.ledDeleteText = QLineEdit('Введите id удаляемого', self)
+        self.ledDeleteText.move(250, 240)
+
+        self.btnDelete = QPushButton('Удалить сотрудника', self)
+        self.btnDelete.move(250, 190)
+        self.btnDelete.clicked.connect(self.evt_btn_delete_clicked)
+
+        self.btnAdd = QPushButton('Добавить сотрудника', self)
+        self.btnAdd.move(250, 140)
+        self.btnAdd.clicked.connect(self.evt_btn_add_clicked)
+
     def evt_btn_back_clicked(self):
         dlgDirector.show()
         dlgListOfWorkers.close()
+
+    def evt_btn_delete_clicked(self):
+        conn = psycopg2.connect(dbname=st.dp_params['dbname'], user=st.dp_params['user'],
+                                password=st.dp_params['password'], host=st.dp_params['host'])
+        cursor = conn.cursor()
+        cursor.execute('CALL delete_emploee((%s))', (self.ledDeleteText.text(),))
+        conn.commit()
+        print(self.ledDeleteText.text())
+
+    def evt_btn_add_clicked(self):
+        dlgAddWorkerD.show()
 
 
 class DlgListOfWorkersA(QDialog):  # класс окна списка сотрудников
@@ -245,6 +281,72 @@ class DlgListOfWorkersA(QDialog):  # класс окна списка сотру
     def evt_btn_back_clicked(self):
         dlgAccountant.show()
         dlgListOfWorkersA.close()
+
+
+class DlgAddWorkerD(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Добавление сотрудника')
+        self.resize(1500, 1500)
+
+        self.btnBack = QPushButton('Назад', self)
+        self.btnBack.move(500, 1000)
+        self.btnBack.clicked.connect(self.evt_btn_back_clicked)
+
+        self.btnAdd = QPushButton('Добавить', self)
+        self.btnAdd.move(500, 1050)
+        self.btnBack.clicked.connect(self.evt_btn_add_clicked)
+
+        self.ledId = QLineEdit('Введите id', self)
+        self.ledId.move(300, 1000)
+
+        self.ledName = QLineEdit('Введите имя', self)
+        self.ledName.move(300, 950)
+
+        self.ledSurname = QLineEdit('Введите фамилия', self)
+        self.ledSurname.move(300, 900)
+
+        self.ledLastname = QLineEdit('Введите отчество', self)
+        self.ledLastname.move(300, 850)
+
+        self.ledBirthdate = QLineEdit('Введите дату рождения', self)
+        self.ledBirthdate.move(300, 800)
+
+        self.ledJob = QLineEdit('Введите должность', self)
+        self.ledJob.move(300, 750)
+
+        self.ledWorkExp = QLineEdit('Введите опыт работы', self)
+        self.ledWorkExp.move(300, 700)
+
+        self.ledEducation = QLineEdit('Введите образование', self)
+        self.ledEducation.move(300, 650)
+
+        self.ledSalary = QLineEdit('Введите зп', self)
+        self.ledSalary.move(300, 600)
+
+        self.ledPhone = QLineEdit('Введите номер телефона', self)
+        self.ledPhone.move(300, 550)
+
+        self.ledPassword = QLineEdit('Введите пароль', self)
+        self.ledPassword.move(300, 500)
+
+    def evt_btn_back_clicked(self):
+        dlgListOfWorkers.show()
+        dlgAddWorkerD.close()
+
+    def evt_btn_add_clicked(self):
+        conn = psycopg2.connect(dbname=st.dp_params['dbname'], user=st.dp_params['user'],
+                                password=st.dp_params['password'], host=st.dp_params['host'])
+        cursor = conn.cursor()
+        cursor.execute('CALL add_emploee((%s),(%s),(%s),(%s),(%s),(%s),(%s),(%s),(%s),(%s),(%s))',
+                       (self.ledId.text(),
+                        self.ledName.text(), self.ledSurname.text(),
+                        self.ledLastname.text(), self.ledBirthdate.text(),
+                        self.ledJob.text(),
+                        self.ledWorkExp.text(), self.ledEducation.text(),
+                        self.ledSalary.text(),
+                        self.ledPhone.text(), self.ledPassword.text()))
+        conn.commit()
 
 
 class DlgListOfWorkersM(QDialog):  # класс окна списка сотрудников
@@ -308,7 +410,7 @@ class DlgDirector(QDialog):  # класс диалогового окна дир
             dlgListOfWorkers.ledText.addItem(list_item)
 
         dlgListOfWorkers.show()
-        dlgListOfWorkers.ledText.showMaximized()
+        dlgListOfWorkers.ledText.show()
         dlgDirector.close()
 
 
@@ -405,9 +507,18 @@ class DlgNurse(QDialog):  # класс диалогового окна медс�
         dlgNurse.close()
 
     def evt_btn_listofvacationers_clicked(self):
-        dlgListOfVacationersN.show()
-        dlgNurse.close()
+        conn = psycopg2.connect(dbname=st.dp_params['dbname'], user=st.dp_params['user'],
+                                password=st.dp_params['password'], host=st.dp_params['host'])
+        cursor = conn.cursor()
+        cursor.execute('SELECT vacationers_clubs()')
+        vacationers = cursor.fetchall()
+        dlgListOfVacationersN.ledText.clear()
+        for vacationer in vacationers:
+            list_item = QListWidgetItem(str(vacationer))
+            dlgListOfVacationersN.ledText.addItem(list_item)
 
+        dlgListOfVacationersN.ledText.show()
+        dlgNurse.close()
     def evt_btn_listofguests_clicked(self):
         dlgListOfGuestsN.show()
         dlgNurse.close()
@@ -472,6 +583,7 @@ if __name__ == '__main__':
     dlgListOfWorkers = DlgListOfWorkers()
     dlgListOfWorkersA = DlgListOfWorkersA()
     dlgListOfWorkersM = DlgListOfWorkersM()
+    dlgAddWorkerD = DlgAddWorkerD()
 
     dlgDirector = DlgDirector()
     dlgAdmin = DlgAdmin()
